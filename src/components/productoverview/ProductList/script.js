@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
 import gql from 'graphql-tag';
 import LoadingSpinner from '../../common/LoadingSpinner/index.vue';
@@ -123,9 +124,12 @@ const getProducts = (component) => {
         ({
           id, masterVariant: {
             sku, images, price, availability,
-          }, name, slug,
+          }, name, slug, categories,
         }) => ({
           id,
+          categories: categories.map(
+            ({ id }) => window?.categories[id]?.name,
+          ),
           masterData: {
             current: {
               name: name[loc],

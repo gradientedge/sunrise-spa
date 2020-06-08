@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import gql from 'graphql-tag';
 import { locale, isToughDevice } from '../../common/shared';
 
@@ -83,6 +84,24 @@ export default {
           locale: locale(this),
         };
       },
+    },
+  },
+  watch: {
+    categories() {
+      const flatten = (children, extractChildren) => Array.prototype.concat.apply(
+        children,
+        children.map(x => flatten(extractChildren(x) || [], extractChildren)),
+      );
+
+      const extractChildren = x => x.children;
+
+      const flat = flatten(this.categories.results, extractChildren).reduce(
+        (result, category) => {
+          result[category.id] = category;
+          return result;
+        }, {},
+      );
+      window.categories = flat;
     },
   },
 };
