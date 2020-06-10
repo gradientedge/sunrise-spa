@@ -128,7 +128,7 @@ const getProducts = (component) => {
         }) => ({
           id,
           categories: categories.map(
-            ({ id }) => window?.categories[id]?.name,
+            ({ id }) => window?.categories[id]?.slug,
           ),
           masterData: {
             current: {
