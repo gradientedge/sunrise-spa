@@ -12,15 +12,25 @@ const productTypes = {
       makeConfig(accessToken),
     ),
   ),
-  translations: () => productTypes.getItem().then(
-    productType => productType.attributes.reduce(
-      (result, { name, label }) => {
-        result[name] = {
-          ...label,
-        };
-        return result;
-      }, {},
+  getItems: withToken(
+    ({ access_token: accessToken }) => groupFetchJson(
+      `${baseUrl}/product-types/`,
+      makeConfig(accessToken),
     ),
+  ),
+  translations: () => productTypes.getItems().then(
+    ({ results }) => results.map(
+      ({ attributes }) => attributes,
+    ).filter(x => x)
+      .flat()
+      .reduce(
+        (result, { name, label }) => {
+          result[name] = {
+            ...label,
+          };
+          return result;
+        }, {},
+      ),
   ),
 };
 
