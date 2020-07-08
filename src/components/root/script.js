@@ -25,7 +25,7 @@ const checkLocale = (component) => {
     };
   }
   if (!loc(component)) {
-    const locale = component?.$store?.state?.locale || 'en';
+    const locale = component?.$store?.state?.locale || 'de-DE';
     newParams = {
       ...newParams,
       locale,

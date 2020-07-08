@@ -15,7 +15,7 @@ export default {
   },
   languages: {
     en: 'English',
-    de: 'Deutsch',
+    'de-DE': 'Deutsch',
   },
   countries: {
     DE: 'Deutschland',

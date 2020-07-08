@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { isToughDevice } from '../../common/shared';
+import { locale, isToughDevice } from '../../common/shared';
 
 const minus = require('@/assets/img/minus-1.png');
 const plus = require('@/assets/img/plus79.png');
@@ -80,7 +80,7 @@ export default {
         }`,
       variables() {
         return {
-          locale: 'DE-DE',
+          locale: locale(this),
         };
       },
     },
