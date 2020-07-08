@@ -80,7 +80,7 @@ export default {
         }`,
       variables() {
         return {
-          locale: locale(this),
+          locale: 'DE-DE',
         };
       },
     },
