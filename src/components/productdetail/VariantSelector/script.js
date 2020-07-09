@@ -1,5 +1,4 @@
 import gql from 'graphql-tag';
-import flatMap from 'lodash.flatmap';
 import AttributeSelect from '../AttributeSelect/index.vue';
 
 export default {
@@ -16,8 +15,7 @@ export default {
   }),
   methods: {
     groupValuesByAttribute(acc, currentItem) {
-      const key = this.attributeTranslation?.get(currentItem.name)
-        || currentItem.name;
+      const key = currentItem.name;
       if (!acc[key]) {
         acc[key] = {
           name: currentItem.name,
@@ -31,8 +29,13 @@ export default {
   computed: {
     attributes() {
       const { allVariants } = this.product.masterData.staged || this.product.masterData.current;
-      return flatMap(allVariants, variant => Object.values(variant.attributes)
-        .filter(attr => typeof attr === 'object'))
+      return allVariants.map(
+        ({ attributesRaw }) => attributesRaw.map(
+          ({ attributeDefinition: { name, label }, value }) => ({
+            name, label, value: typeof value === 'object' ? value.label : value,
+          }),
+        ),
+      ).flat()
         .reduce(this.groupValuesByAttribute, {});
     },
     selected() {
@@ -42,53 +45,44 @@ export default {
     variantCombinations() {
       const p = this.product.masterData.staged || this.product.masterData.current;
       return p.allVariants
-        .map((variant) => {
-          const attrs = variant.attributes;
-          const combi = { sku: variant.sku };
-          delete attrs.__typename;
-          Object.keys(attrs).forEach((key) => {
-            combi[key] = variant.attributes[key].label || variant.attributes[key].value;
-          });
-          return combi;
-        });
+        .map(({ sku, attributesRaw }) => ({
+          sku,
+          ...Object.fromEntries(
+            attributesRaw.map(
+              ({ attributeDefinition: { name }, value }) => [
+                name, typeof value === 'object' ? value.label : value,
+              ],
+            ),
+          ),
+        }));
     },
   },
   apollo: {
     product: {
       query: gql`
-        query VariantSelector($locale: Locale!, $sku: String!, $preview: Boolean!) {
+        query VariantSelector( $sku: String!, $preview: Boolean!,$locale:Locale!) {
           product(sku: $sku) {
             id
             masterData {
               current @skip(if: $preview) {
                 allVariants {
                   sku
-                  attributes {
-                    ...on mainProductType {
-                      color {
-                        key
-                        label(locale: $locale)
-                        name
-                      }
-                      size {
-                        value
-                        name
-                      }
+                  attributesRaw {
+                    attributeDefinition {
+                      name
+                      label(locale:$locale)
                     }
+                    value
                   }
                 }
                 variant(sku: $sku) {
                   attributes {
-                    ...on mainProductType {
-                      color {
+                    ...on DB_AccessoiresProductType {
+                      Farbe {
                         key
-                        label(locale: $locale)
+                        
                         name
                       }
-                      size {
-                        value
-                        name
-                      }               
                     }
                   }
                 }
@@ -97,32 +91,22 @@ export default {
               staged @include(if: $preview) {
                 allVariants {
                   sku
-                  attributes {
-                    ...on mainProductType {
-                      color {
-                        key
-                        label(locale: $locale)
-                        name
-                      }
-                      size {
-                        value
-                        name
-                      }
+                  attributesRaw {
+                    attributeDefinition {
+                      name
+                      label(locale:$locale)
                     }
+                    value
                   }
                 }
                 variant(sku: $sku) {
                   attributes {
-                    ...on mainProductType {
-                      color {
+                    ...on DB_AccessoiresProductType {
+                      Farbe {
                         key
-                        label(locale: $locale)
+                        
                         name
                       }
-                      size {
-                        value
-                        name
-                      }               
                     }
                   }
                 }
@@ -161,7 +145,7 @@ export default {
       variables() {
         return {
           locale: this.$i18n.locale,
-          type: 'main',
+          type: 'DBAccessoires',
         };
       },
     },
